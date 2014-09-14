@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CLOPE
+namespace CLOPE.Native
 {
-	class Transaction
+	public class Transaction
 	{
 		public List<int> Parameters { get { return parameters; } }
 		public int ClusterNumber { get { return clusterNumber; } set { clusterNumber = value; } }

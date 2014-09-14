@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CLOPE.Native;
 
 namespace CLOPE
 {
@@ -51,7 +52,7 @@ namespace CLOPE
 
 				Mushroom.Normalize(srcDataFilepath, normDataFilePath);
 				CLOPEData data = new CLOPEData(normDataFilePath, resDataFilePath);
-				clusters = CLOPE.Execute(data, r);
+				clusters = CLOPE.Native.CLOPE.Execute(data, r);
 				data.Close();
 			}));
 

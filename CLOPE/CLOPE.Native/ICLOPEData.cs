@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CLOPE
+namespace CLOPE.Native
 {
-	interface ICLOPEData
+	public interface ICLOPEData
 	{
 		Transaction ReadNextTransaction();
 		void WriteTransaction(Transaction transaction);

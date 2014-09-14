@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CLOPE
+namespace CLOPE.Native
 {
-	class CLOPE
+	public class CLOPE
 	{
 		public static Dictionary<int, CLOPECluster> Execute(ICLOPEData data, double repulsionCoefficient)
 		{
@@ -20,14 +20,14 @@ namespace CLOPE
 				while (!data.IsEnd())
 				{
 					Transaction transaction = data.ReadNextTransaction();
-					double removeDelta = transaction.ClusterNumber == 0 ? 0 : clusters[transaction.ClusterNumber].DeltaRemove(transaction.Parameters, repulsionCoefficient);
+					double removeDelta = transaction.ClusterNumber == 0 ? 0 : DeltaRemove(clusters[transaction.ClusterNumber], transaction.Parameters, repulsionCoefficient);
 					double maxDelta = 0;
 					double delta = 0;
 					int newClusterNumber = transaction.ClusterNumber;
 
 					foreach (KeyValuePair<int, CLOPECluster> pair in clusters)
 					{
-						delta = pair.Value.DeltaAdd(transaction.Parameters, repulsionCoefficient);
+						delta = DeltaAdd(pair.Value, transaction.Parameters, repulsionCoefficient);
 						if (delta + removeDelta > maxDelta)
 						{
 							maxDelta = delta;
@@ -35,15 +35,14 @@ namespace CLOPE
 						}
 					}
 
-					CLOPECluster cluster = new CLOPECluster();
-					delta = cluster.DeltaAdd(transaction.Parameters, repulsionCoefficient);
+					delta = DeltaAdd(null, transaction.Parameters, repulsionCoefficient);
 					if (delta + removeDelta > maxDelta)
 					{
 						if (clusters.Count == 0)
 							newClusterNumber = 1;
 						else
 							newClusterNumber = clusters.Keys.Max() + 1;
-						clusters.Add(newClusterNumber, cluster);
+						clusters.Add(newClusterNumber, new CLOPECluster());
 					}
 
 					if (newClusterNumber != transaction.ClusterNumber)
@@ -66,6 +65,28 @@ namespace CLOPE
 				clusters.Remove(key);
 
 			return clusters;
+		}
+
+		static double DeltaAdd(CLOPECluster cluster, List<int> transaction, double r)
+		{
+			if (cluster == null)
+				return transaction.Count / Math.Pow(transaction.Count, r);
+			int squareNew = cluster.Square + transaction.Count;
+			int widthNew = cluster.Width;
+			for (int i = 0; i < transaction.Count; i++)
+				if (!cluster.Occ.ContainsKey(transaction[i]))
+					widthNew++;				
+			return squareNew * (cluster.Size + 1) / Math.Pow(widthNew, r) - cluster.Square * cluster.Size / Math.Pow(cluster.Width, r);
+		}
+
+		static double DeltaRemove(CLOPECluster cluster, List<int> transaction, double r)
+		{
+			int squareNew = cluster.Square - transaction.Count;
+			int widthNew = cluster.Width;
+			for (int i = 0; i < transaction.Count; i++)
+				if (cluster.Occ[transaction[i]] == 1)
+					widthNew--;
+			return squareNew * (cluster.Size - 1) / Math.Pow(widthNew, r) - cluster.Square * cluster.Size / Math.Pow(cluster.Width, r);
 		}
 	}
 }
